@@ -1,46 +1,58 @@
-"use client"
+'use client';
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  Card, CardContent, CardDescription,
+  CardFooter, CardHeader, CardTitle
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const { register, loading, error } = useAuth();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "student", // Default role is student
-  })
+    full_name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'STUDENT', // para backend: STUDENT, TUTOR
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleRoleChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, role: value }))
-  }
+    setFormData((prev) => ({
+      ...prev,
+      role: value === 'tutor' ? 'TUTOR' : 'STUDENT',
+    }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Registro exitoso:", formData)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    // Redirect based on role
-    if (formData.role === "tutor") {
-      router.push("/onboarding/tutor")
-    } else {
-      router.push("/onboarding/student")
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden');
+      return;
     }
-  }
+
+    await register({
+      full_name: formData.full_name,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role as 'STUDENT' | 'TUTOR' | 'BOTH',
+    });
+
+    // redirección automática está en useAuth
+  };
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
@@ -55,12 +67,12 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nombre completo</Label>
+              <Label htmlFor="full_name">Nombre completo</Label>
               <Input
-                id="name"
-                name="name"
+                id="full_name"
+                name="full_name"
                 placeholder="Juan Pérez"
-                value={formData.name}
+                value={formData.full_name}
                 onChange={handleChange}
                 required
               />
@@ -101,7 +113,11 @@ export default function RegisterPage() {
             </div>
             <div className="grid gap-2">
               <Label>¿Cómo deseas usar LINKUDP?</Label>
-              <RadioGroup value={formData.role} onValueChange={handleRoleChange} className="flex flex-col space-y-1">
+              <RadioGroup
+                value={formData.role === 'TUTOR' ? 'tutor' : 'student'}
+                onValueChange={handleRoleChange}
+                className="flex flex-col space-y-1"
+              >
                 <div className="flex items-center space-x-2 rounded-md border p-3">
                   <RadioGroupItem value="student" id="student" />
                   <Label htmlFor="student" className="flex flex-col">
@@ -118,13 +134,14 @@ export default function RegisterPage() {
                 </div>
               </RadioGroup>
             </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">
-              Registrarse
+            <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700" disabled={loading}>
+              {loading ? 'Registrando...' : 'Registrarse'}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              ¿Ya tienes una cuenta?{" "}
+              ¿Ya tienes una cuenta?{' '}
               <Link href="/login" className="underline underline-offset-4 hover:text-primary">
                 Iniciar sesión
               </Link>
@@ -133,5 +150,5 @@ export default function RegisterPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }
