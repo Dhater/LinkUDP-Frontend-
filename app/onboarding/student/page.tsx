@@ -1,42 +1,57 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronLeft } from "lucide-react";
 
 export default function StudentOnboardingPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
     university: "",
     degree: "",
     year: "",
     interests: "",
     bio: "",
-  })
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Perfil de estudiante creado:", formData)
-    router.push("/dashboard/student")
-  }
+    e.preventDefault();
+    console.log("Perfil de estudiante creado:", formData);
+    router.push("/dashboard/student");
+  };
 
   return (
     <div className="container py-10">
@@ -46,13 +61,17 @@ export default function StudentOnboardingPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-sky-700">Completa tu perfil de estudiante</h1>
+        <h1 className="text-2xl font-bold text-sky-700">
+          Completa tu perfil de estudiante
+        </h1>
       </div>
 
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle>Información académica</CardTitle>
-          <CardDescription>Esta información nos ayudará a encontrar tutores adecuados para ti</CardDescription>
+          <CardDescription>
+            Esta información nos ayudará a encontrar tutores adecuados para ti
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -80,7 +99,9 @@ export default function StudentOnboardingPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="year">Año de estudio</Label>
-              <Select onValueChange={(value) => handleSelectChange("year", value)}>
+              <Select
+                onValueChange={(value) => handleSelectChange("year", value)}
+              >
                 <SelectTrigger id="year">
                   <SelectValue placeholder="Selecciona tu año de estudio" />
                 </SelectTrigger>
@@ -118,9 +139,6 @@ export default function StudentOnboardingPage() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/")}>
-              Omitir por ahora
-            </Button>
             <Button type="submit" className="bg-sky-600 hover:bg-sky-700">
               Guardar y continuar
             </Button>
@@ -128,5 +146,5 @@ export default function StudentOnboardingPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }
