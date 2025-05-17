@@ -38,21 +38,29 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
+    // Validar que la contraseña tenga al menos 8 caracteres y una mayúscula
+    const passwordRegex = /^(?=.*[A-Z]).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      alert('La contraseña debe contener al menos 8 caracteres y una letra mayúscula.');
+      return;
+    }
+  
     if (formData.password !== formData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
     }
-
+  
     await register({
       full_name: formData.full_name,
       email: formData.email,
       password: formData.password,
       role: formData.role as 'STUDENT' | 'TUTOR' | 'BOTH',
     });
-
+  
     // redirección automática está en useAuth
   };
+  
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
