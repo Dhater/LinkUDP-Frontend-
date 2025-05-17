@@ -37,9 +37,6 @@ export default function Home() {
                 <Link href="/register">
                   <Button className="bg-sky-600 hover:bg-sky-700">Registrarse</Button>
                 </Link>
-                <Link href="/tutoring">
-                  <Button variant="outline">Ver tutorías disponibles</Button>
-                </Link>
               </div>
             </div>
           </div>
