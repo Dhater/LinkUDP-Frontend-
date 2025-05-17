@@ -1,9 +1,22 @@
-// src/hooks/useAuth.ts
+
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react"; 
 import { jwtDecode } from "jwt-decode";
+
+
+export interface User { 
+  id: number;
+  full_name: string;
+  email: string;
+  role: "STUDENT" | "TUTOR" | "BOTH"; 
+
+}
+
+export interface UserProfile { 
+  user: User;
+}
 
 interface Credentials {
   email: string;
@@ -15,6 +28,13 @@ interface RegisterData {
   email: string;
   password: string;
   role: "STUDENT" | "TUTOR" | "BOTH";
+}
+interface UpdateStudentProfileData {
+  university: string;
+  career?: string;
+  study_year: number;
+  interestCourseIds?: number[];
+  bio: string;
 }
 
 export function useAuth() {
@@ -37,13 +57,11 @@ export function useAuth() {
       const { access_token } = await res.json();
       localStorage.setItem("token", access_token);
 
-      // ✅ Obtener el perfil
       const profileRes = await fetch("http://localhost:3000/profile/me", {
         headers: { Authorization: `Bearer ${access_token}` },
       });
-      const profile = await profileRes.json();
+      const profile: UserProfile = await profileRes.json(); // Use UserProfile type
 
-      // ✅ Redirigir según rol
       if (profile.user && profile.user.role === "STUDENT") {
         router.push("/dashboard/student");
       } else if (
@@ -52,13 +70,10 @@ export function useAuth() {
       ) {
         router.push("/dashboard/tutor");
       } else {
-        // Fallback o manejo de error si el rol no está o es inesperado
         console.warn(
           `Rol de usuario no determinado o inesperado en login: ${profile.user?.role}. Redirigiendo a dashboard general o login.`
         );
-        // router.push("/"); // O a una página de error/login
-        // Por ahora, para mantener un comportamiento similar al anterior si solo hay dos dashboards:
-        router.push("/dashboard/tutor"); // O considera un dashboard general
+        router.push("/dashboard/tutor");
       }
     } catch (err) {
       setError("Credenciales inválidas o error de servidor");
@@ -79,19 +94,11 @@ export function useAuth() {
 
       if (!res.ok) throw new Error("Error al registrar usuario");
 
-      const responseData = await res.json(); // Guardamos la respuesta completa
-      console.log(
-        "Respuesta completa del backend (/auth/register):",
-        responseData
-      ); // Logueamos la respuesta completa
-
-      const { access_token } = responseData; // Intentamos desestructurar como antes
+      const responseData = await res.json();
+      const { access_token } = responseData;
       localStorage.setItem("token", access_token);
 
-      // Decodificar token para inspección (opcionalmente usar su rol si es fiable)
       let decodedTokenRole: string | undefined;
-      console.log("Token a decodificar (valor):", access_token);
-      console.log("Token a decodificar (tipo):", typeof access_token);
       try {
         const decoded: { role?: string; [key: string]: any } =
           jwtDecode(access_token);
@@ -100,18 +107,15 @@ export function useAuth() {
         console.error("Error decodificando token:", e);
       }
 
-      // ✅ Obtener perfil
       const profileRes = await fetch("http://localhost:3000/profile/me", {
         headers: { Authorization: `Bearer ${access_token}` },
       });
-      const profile = await profileRes.json();
+      const profile: UserProfile = await profileRes.json();
 
       console.log("Rol enviado al registrar:", data.role);
       console.log("Rol en token JWT decodificado:", decodedTokenRole);
-      // Accedemos a profile.user.role para el log y la lógica
       console.log("Rol obtenido de /profile/me:", profile.user?.role);
 
-      // ✅ Redirigir según rol del perfil (fuente principal de verdad)
       if (
         profile.user &&
         (profile.user.role === "STUDENT" || profile.user.role === "BOTH")
@@ -120,11 +124,10 @@ export function useAuth() {
       } else if (profile.user && profile.user.role === "TUTOR") {
         router.push("/onboarding/tutor");
       } else {
-        // Manejo para roles inesperados o si se necesita una lógica diferente
         console.warn(
           `Rol de perfil no manejado explícitamente para onboarding: ${profile.user?.role}. Redirigiendo a /onboarding/student por defecto.`
         );
-        router.push("/onboarding/student"); // O a una página de error/dashboard general si es preferible
+        router.push("/onboarding/student");
       }
     } catch (err) {
       console.error("Error en la función de registro:", err);
@@ -134,5 +137,74 @@ export function useAuth() {
     }
   };
 
-  return { login, register, loading, error };
+  const updateStudentProfile = async (data: UpdateStudentProfileData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado");
+
+      const res = await fetch("http://localhost:3000/profile/me", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Error al actualizar perfil:", errorData);
+        setError("No se pudo guardar el perfil.");
+        return null;
+      }
+
+      const responseData = await res.json();
+      console.log("Perfil actualizado:", responseData);
+      router.push("/dashboard/student"); 
+      return responseData;
+    } catch (err) {
+      console.error("Error al actualizar perfil:", err);
+      setError("Ocurrió un error al actualizar el perfil.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentUserProfile = useCallback(async (): Promise<UserProfile | null> => {
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      
+      return null;
+    }
+
+    try {
+      const profileRes = await fetch("http://localhost:3000/profile/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!profileRes.ok) {
+        localStorage.removeItem("token"); 
+        return null;
+      }
+      const profile = await profileRes.json();
+      return profile as UserProfile; 
+    } catch (err) {
+      console.error("Error fetching current user profile:", err);
+      return null;
+    } finally {
+      
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    router.push("/login");
+   
+  }, [router]);
+
+  return { login, register, updateStudentProfile, getCurrentUserProfile, logout, loading, error };
 }

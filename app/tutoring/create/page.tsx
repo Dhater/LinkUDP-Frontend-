@@ -38,7 +38,7 @@ export default function CreateTutoringPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Tutoría creada:", formData)
-    router.push("/")
+    router.push("/tutoring")
   }
 
   return (
