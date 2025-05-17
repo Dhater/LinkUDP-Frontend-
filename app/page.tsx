@@ -10,9 +10,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-sky-600">LINKUDP</span>
-          </Link>
+          <span className="text-xl font-bold text-sky-600 cursor-default select-none">LINKUDP</span>
           <nav className="ml-auto flex gap-4 sm:gap-6">
             <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               Iniciar Sesión

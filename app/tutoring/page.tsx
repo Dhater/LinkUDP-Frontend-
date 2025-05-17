@@ -1,25 +1,69 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Plus } from "lucide-react"
+import { useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
 
 export default function TutoringListPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token")
+      if (token) {
+        try {
+          jwtDecode(token)
+          setIsLoggedIn(true)
+        } catch {
+          setIsLoggedIn(false)
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
+    }
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-sky-600">LINKUDP</span>
-          </Link>
+          <span className="text-xl font-bold text-sky-600 cursor-default select-none">LINKUDP</span>
           <nav className="ml-auto flex gap-4 sm:gap-6">
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Iniciar Sesión
-            </Link>
-            <Link href="/register" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Registrarse
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/tutoring"
+                  className="text-sm font-medium text-foreground border-b-2 border-sky-600 pb-1"
+                >
+                  Buscar Tutorías
+                </Link>
+                <Link
+                  href="/dashboard/student"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Mi Dashboard
+                </Link>
+                <Link
+                  href="/profile/student"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Mi Perfil
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                  Iniciar Sesión
+                </Link>
+                <Link href="/register" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                  Registrarse
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>

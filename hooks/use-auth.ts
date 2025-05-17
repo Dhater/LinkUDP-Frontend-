@@ -16,6 +16,14 @@ interface RegisterData {
   password: string;
   role: "STUDENT" | "TUTOR" | "BOTH";
 }
+interface UpdateStudentProfileData {
+  university: string;
+  career?: string;
+  study_year: number;
+  interestCourseIds?: number[];
+  bio: string;
+}
+
 
 export function useAuth() {
   const router = useRouter();
@@ -134,5 +142,43 @@ export function useAuth() {
     }
   };
 
-  return { login, register, loading, error };
+  const updateStudentProfile = async (data:UpdateStudentProfileData) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token no encontrado");
+
+    const res = await fetch("http://localhost:3000/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error("Error al actualizar perfil:", errorData);
+      setError("No se pudo guardar el perfil.");
+      return null;
+    }
+
+    const responseData = await res.json();
+    console.log("Perfil actualizado:", responseData);
+    router.push("/dashboard/student");
+    return responseData;
+  } catch (err) {
+    console.error("Error al actualizar perfil:", err);
+    setError("Ocurrió un error al actualizar el perfil.");
+    return null;
+  } finally {
+    setLoading(false);
+  }
+  
+};
+
+
+  return { login, register,updateStudentProfile, loading, error};
 }

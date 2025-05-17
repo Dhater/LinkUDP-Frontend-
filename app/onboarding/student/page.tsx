@@ -25,14 +25,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
+  const {updateStudentProfile, loading, error } = useAuth();
   const [formData, setFormData] = useState({
     university: "",
-    degree: "",
-    year: "",
-    interests: "",
+    career: "",
+    study_year: 1, // Valor inicial válido
+    interests: "", // Cambia a string para el textarea
     bio: "",
   });
 
@@ -44,13 +46,30 @@ export default function StudentOnboardingPage() {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "study_year" || name === "year") {
+      setFormData((prev) => ({ ...prev, study_year: parseInt(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Perfil de estudiante creado:", formData);
-    router.push("/dashboard/student");
+    // Convierte los intereses a array de números si es posible
+    let interestCourseIds: number[] = [];
+    if (formData.interests.trim() !== "") {
+      interestCourseIds = formData.interests
+        .split(",")
+        .map((s) => parseInt(s.trim()))
+        .filter((n) => !isNaN(n));
+    }
+    await updateStudentProfile({
+      university: formData.university,
+      career: formData.career,
+      study_year: formData.study_year,
+      interestCourseIds,
+      bio: formData.bio,
+    });
   };
 
   return (
@@ -87,12 +106,12 @@ export default function StudentOnboardingPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="degree">Carrera</Label>
+              <Label htmlFor="career">Carrera</Label>
               <Input
-                id="degree"
-                name="degree"
+                id="career"
+                name="career"
                 placeholder="Ej: Ingeniería Civil"
-                value={formData.degree}
+                value={formData.career}
                 onChange={handleChange}
                 required
               />
@@ -100,7 +119,7 @@ export default function StudentOnboardingPage() {
             <div className="grid gap-2">
               <Label htmlFor="year">Año de estudio</Label>
               <Select
-                onValueChange={(value) => handleSelectChange("year", value)}
+                onValueChange={(value) => handleSelectChange("study_year", value)}
               >
                 <SelectTrigger id="year">
                   <SelectValue placeholder="Selecciona tu año de estudio" />
@@ -111,7 +130,7 @@ export default function StudentOnboardingPage() {
                   <SelectItem value="3">Tercer año</SelectItem>
                   <SelectItem value="4">Cuarto año</SelectItem>
                   <SelectItem value="5">Quinto año</SelectItem>
-                  <SelectItem value="6+">Sexto año o superior</SelectItem>
+                  <SelectItem value="6">Sexto año o superior</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -120,7 +139,7 @@ export default function StudentOnboardingPage() {
               <Textarea
                 id="interests"
                 name="interests"
-                placeholder="Ej: Matemáticas, Física, Programación"
+                placeholder="Ej: 1, 2, 3 (IDs de cursos de interés)"
                 value={formData.interests}
                 onChange={handleChange}
                 rows={2}
