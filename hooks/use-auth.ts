@@ -36,6 +36,10 @@ interface UpdateStudentProfileData {
   interestCourseIds?: number[];
   bio: string;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> ff0b41cd12b69369ef30f3d02bfcbf40d421637b
 
 export function useAuth() {
   const router = useRouter();
@@ -137,6 +141,7 @@ export function useAuth() {
     }
   };
 
+<<<<<<< HEAD
   const updateStudentProfile = async (data: UpdateStudentProfileData) => {
     setLoading(true);
     setError(null);
@@ -207,4 +212,45 @@ export function useAuth() {
   }, [router]);
 
   return { login, register, updateStudentProfile, getCurrentUserProfile, logout, loading, error };
+=======
+  const updateStudentProfile = async (data:UpdateStudentProfileData) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token no encontrado");
+
+    const res = await fetch("http://localhost:3000/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error("Error al actualizar perfil:", errorData);
+      setError("No se pudo guardar el perfil.");
+      return null;
+    }
+
+    const responseData = await res.json();
+    console.log("Perfil actualizado:", responseData);
+    router.push("/dashboard/student");
+    return responseData;
+  } catch (err) {
+    console.error("Error al actualizar perfil:", err);
+    setError("Ocurrió un error al actualizar el perfil.");
+    return null;
+  } finally {
+    setLoading(false);
+  }
+  
+};
+
+
+  return { login, register,updateStudentProfile, loading, error};
+>>>>>>> ff0b41cd12b69369ef30f3d02bfcbf40d421637b
 }

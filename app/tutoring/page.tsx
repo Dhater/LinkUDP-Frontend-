@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Plus } from "lucide-react"
+<<<<<<< HEAD
 import { useEffect, useState, useCallback } from "react" // Added useCallback
 import { jwtDecode } from "jwt-decode"
 import { useAuth } from "@/hooks/use-auth" // Import useAuth
@@ -109,6 +110,30 @@ export default function TutoringListPage() {
     }
   )
 
+=======
+import { useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
+
+export default function TutoringListPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token")
+      if (token) {
+        try {
+          jwtDecode(token)
+          setIsLoggedIn(true)
+        } catch {
+          setIsLoggedIn(false)
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
+    }
+  }, [])
+
+>>>>>>> ff0b41cd12b69369ef30f3d02bfcbf40d421637b
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
